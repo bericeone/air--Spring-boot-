@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.air.mapper.FlightMapper">
+    <resultMap id="BaseResultMap" type="com.air.entity.Flight">
+        <id column="id" property="id"/>
+        <result column="flight_no" property="flightNumber"/>
+        <result column="departure" property="departureCity"/>
+        <result column="destination" property="arrivalCity"/>
+        <result column="departure_time" property="departureTime"/>
+        <result column="arrival_time" property="arrivalTime"/>
+        <result column="price" property="price"/>
+        <result column="seats_total" property="totalSeats"/>
+        <result column="seats_available" property="availableSeats"/>
+        <result column="status" property="status"/>
+        <result column="image_url" property="imageUrl"/>
+        <result column="created_at" property="createTime"/>
+        <result column="updated_at" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, flight_no, departure, destination, departure_time, arrival_time, price,
+        seats_total, seats_available, status,created_at, updated_at,image_url
+    </sql>
+
+    <insert id="insert" parameterType="com.air.entity.Flight" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ticket (
+            flight_no, departure, destination,
+            departure_time, arrival_time, price,
+            seats_total, seats_available, status,
+            image_url, created_at, updated_at
+        ) VALUES (
+            #{flightNumber,jdbcType=VARCHAR},
+            #{departureCity,jdbcType=VARCHAR},
+            #{arrivalCity,jdbcType=VARCHAR},
+            #{departureTime,jdbcType=TIMESTAMP},
+            #{arrivalTime,jdbcType=TIMESTAMP},
+            #{price,jdbcType=DECIMAL},
+            #{totalSeats,jdbcType=INTEGER},
+            #{availableSeats,jdbcType=INTEGER},
+            #{status,jdbcType=INTEGER},
+            #{imageUrl,jdbcType=VARCHAR},
+            NOW(),
+            NOW()
+        )
+    </insert>
+
+    <update id="update" parameterType="com.air.entity.Flight">
+        UPDATE ticket
+        <set>
+            <if test="flightNumber != null">flight_no = #{flightNumber},</if>
+            <if test="departureCity != null">departure = #{departureCity},</if>
+            <if test="arrivalCity != null">destination = #{arrivalCity},</if>
+            <if test="departureTime != null">departure_time = #{departureTime},</if>
+            <if test="arrivalTime != null">arrival_time = #{arrivalTime},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="totalSeats != null">seats_total = #{totalSeats},</if>
+            <if test="availableSeats != null">seats_available = #{availableSeats},</if>
+            <if test="status != null">status = #{status,jdbcType=INTEGER},</if>
+            <if test="imageUrl != null">image_url = #{imageUrl},</if>
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM ticket WHERE id = #{id}
+    </delete>
+
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ticket
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM ticket
+        <where>
+            <if test="flightNumber != null and flightNumber != ''">
+                AND flight_no LIKE CONCAT('%', #{flightNumber}, '%')
+            </if>
+            <if test="departureCity != null and departureCity != ''">
+                AND departure LIKE CONCAT('%', #{departureCity}, '%')
+            </if>
+            <if test="arrivalCity != null and arrivalCity != ''">
+                AND destination LIKE CONCAT('%', #{arrivalCity}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY departure_time DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM ticket
+        <where>
+            <if test="flightNumber != null and flightNumber != ''">
+                AND flight_no LIKE CONCAT('%', #{flightNumber}, '%')
+            </if>
+            <if test="departureCity != null and departureCity != ''">
+                AND departure LIKE CONCAT('%', #{departureCity}, '%')
+            </if>
+            <if test="arrivalCity != null and arrivalCity != ''">
+                AND destination LIKE CONCAT('%', #{arrivalCity}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+</mapper>
